@@ -10,7 +10,7 @@ from omnicons.trainers import get_trainer
 
 
 def train(
-    checkpoint_dir: str = f"{experiment_dir}/MS1-mlm",
+    checkpoint_dir: str = f"{experiment_dir}/MS1-mlm/checkpoints",
     checkpoint_name: str = "ms1mlm-{epoch:02d}-{val_loss:.2f}",
     logger_entity: str = "magarvey",
     logger_name: str = "mlm",
@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser(description="Train MS1Former with MLM")
 parser.add_argument(
     "-checkpoint_dir",
     help="Directory to save checkpoints",
-    default=f"{experiment_dir}/MS1-mlm",
+    default=f"{experiment_dir}/MS1-mlm/checkpoints",
 )
 parser.add_argument(
     "-checkpoint_name",

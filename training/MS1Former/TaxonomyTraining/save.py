@@ -8,7 +8,7 @@ from omnicons import experiment_dir
 
 
 def save(
-    checkpoint_dir: str = f"{experiment_dir}/MS1-mlm/checkpoints",
+    checkpoint_dir: str = f"{experiment_dir}/MS1-taxonomy/checkpoints",
 ):
     convert_zero_checkpoint_to_fp32_state_dict(
         f"{checkpoint_dir}/last.ckpt/",
@@ -17,12 +17,12 @@ def save(
 
 
 parser = argparse.ArgumentParser(
-    description="Convert MS1Former MLM model to pytorch checkpoint."
+    description="Convert MS1Former Taxonomy model to pytorch checkpoint."
 )
 parser.add_argument(
     "-checkpoint_dir",
     help="Directory to save checkpoints",
-    default=f"{experiment_dir}/MS1-mlm/checkpoints",
+    default=f"{experiment_dir}/MS1-taxonomy/checkpoints",
 )
 
 
