@@ -8,5 +8,5 @@ setup(
     license="",
     author="mathusan",
     author_email="mathusan@magarveylab.ca",
-    description="Training module for MAPLE Graphormer",
+    description="Training module for MAPLE Graphormers",
 )

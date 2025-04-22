@@ -3,31 +3,31 @@ from typing import Union
 from torch import nn
 
 from omnicons.configs.Config import ConfigTemplate
-from omnicons.models.encoders.MLPEncoder import MLPEncoder
+from omnicons.models.encoders.MLPEncoder import EncoderDict, SentenceEncoder
 from omnicons.models.encoders.WordEncoder import WordEncoder
 
 
-class MLPEncoderConfig(ConfigTemplate):
+class SentenceEncoderConfig(ConfigTemplate):
 
     def __init__(
         self,
-        input_dim: int = 128,
-        output_dim: int = 128,
+        sentence_structure: list[str],
+        encoder_dicts: list[EncoderDict],
         dropout: float = 0.1,
-        num_layers: int = 1,
+        mlp_layers: int = 1,
     ):
         super().__init__(
-            base="MLPEncoder",
+            base="SentenceEncoder",
             properties={
-                "input_dim": input_dim,
-                "output_dim": output_dim,
+                "sentence_structure": sentence_structure,
+                "encoder_dicts": encoder_dicts,
                 "dropout": dropout,
-                "num_layers": num_layers,
+                "mlp_layers": mlp_layers,
             },
         )
 
     def get_model(self) -> nn.Module:
-        return MLPEncoder(**self.properties)
+        return SentenceEncoder(**self.properties)
 
 
 class WordEncoderConfig(ConfigTemplate):
@@ -55,4 +55,4 @@ class WordEncoderConfig(ConfigTemplate):
         return WordEncoder(**self.properties)
 
 
-EncoderConfig = Union[MLPEncoderConfig, WordEncoderConfig]
+EncoderConfig = Union[SentenceEncoderConfig, WordEncoderConfig]
