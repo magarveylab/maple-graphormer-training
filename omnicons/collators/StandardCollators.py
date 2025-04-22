@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, Union
 
 import torch
+from torch_geometric.data import Data, HeteroData
+
 from omnicons.collators.BaseCollators import BaseCollator
 from omnicons.data.DataClass import MultiInputData
-from torch_geometric.data import Batch, Data, HeteroData
 
 heterogeneous_edge_type = Tuple[str, str, str]
 

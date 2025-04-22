@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple
 
 from torch.nn import ModuleDict
 from torch_geometric.data import Batch
