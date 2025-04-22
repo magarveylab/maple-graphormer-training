@@ -22,13 +22,14 @@ def prepare_ms1_graphs():
     for fp in filenames:
         peaks = json.load(open(fp))
         mzml_id = int(fp.split("/")[-1].split(".")[0])
+        os.makedirs(f"{output_dir}/{mzml_id}", exist_ok=True)
         for p in peaks:
             # add peak_id to the dict
             p["peak_id"] = p["ms1_peak_id"]
         out = MS1Graph.build_from_ms1_spectra(mzml_id=mzml_id, ms1_peaks=peaks)
         for graph in out:
             graph_id = graph.graph_id
-            with open(f"{output_dir}/{graph_id}.pkl", "wb") as f:
+            with open(f"{output_dir}/{mzml_id}/{graph_id}.pkl", "wb") as f:
                 pickle.dump(graph, f)
 
 
