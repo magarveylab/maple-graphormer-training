@@ -1,26 +1,24 @@
-import json
 from typing import List, Optional
 
-import numpy as np
 import pandas as pd
-from Maple.Embedder.graphs.MS1Graph import get_node_vocab, get_word_vocab
+from Maple.Embedder.graphs.MS2Graph import get_node_vocab, get_word_vocab
 from pytorch_lightning import LightningDataModule
-from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from TrainingDataset import TrainingDataset
 
 from omnicons import dataset_dir
-from omnicons.collators.StandardCollators import StandardCollator
+from omnicons.collators.MaskCollators import NodeSentenceMaskCollator
+from omnicons.collators.MixedCollators import MixedCollator
 
 
-class MS1DataModule(LightningDataModule):
+class MS2DataModule(LightningDataModule):
 
     def __init__(
         self,
-        dataset_fp: str = f"{dataset_dir}/ms1_taxonomy.csv",
-        graph_dir: str = f"{dataset_dir}/MS1Graphs",
-        batch_size: int = 36,
+        dataset_fp: str = f"{dataset_dir}/all_peaks_with_ms2.csv",
+        graph_dir: str = f"{dataset_dir}/MS2Graphs",
+        batch_size: int = 1000,
         num_workers: int = 0,
         persistent_workers: bool = False,
         subset: Optional[int] = None,
@@ -41,16 +39,49 @@ class MS1DataModule(LightningDataModule):
         self.node_types_to_consider = node_types_to_consider
         self.edge_types_to_consider = edge_types_to_consider
         # collators
-        self.collator = StandardCollator()
+        self.collator = MixedCollator(
+            collators=(
+                NodeSentenceMaskCollator(
+                    mask_id=self.word_vocab["MZbase"]["[MASK]"],
+                    p=0.25,
+                    mask_names=(
+                        "min_mz_base_mask",
+                        "min_mz_dec_mask",
+                        "mz_base_mask",
+                        "mz_dec_mask",
+                        "max_mz_base_mask",
+                        "max_mz_dec_mask",
+                        "intensity_mask",
+                    ),
+                    node_types_to_consider=("MZ"),
+                ),
+                NodeSentenceMaskCollator(
+                    mask_id=self.word_vocab["NLbase"]["[MASK]"],
+                    p=0.25,
+                    mask_names=(
+                        "min_nl_base_mask",
+                        "min_nl_dec_mask",
+                        "nl_base_mask",
+                        "nl_dec_mask",
+                        "max_nl_base_mask",
+                        "max_nl_dec_mask",
+                    ),
+                    node_types_to_consider=("NL"),
+                ),
+            )
+        )
 
     def setup(self, stage: str = "fit"):
         # load datapoints
-        self.datapoints = {"train": [], "val": [], "test": []}
+        datapoints = {"train": [], "val": [], "test": []}
         for r in tqdm(pd.read_csv(self.dataset_fp).to_dict("records")):
-            self.datapoints[r["split"]].append(r)
+            datapoints[r["split"]].append(
+                {"mzml_id": r["mzml_id"], "ms1_peak_id": r["ms1_peak_id"]}
+            )
+        # setup dynamic datasets
         if stage == "fit":
             self.train = TrainingDataset(
-                datapoints=self.datapoints["train"],
+                datapoints=datapoints["train"],
                 root=self.graph_dir,
                 subset=self.subset,
                 node_types_to_consider=self.node_types_to_consider,
@@ -59,7 +90,7 @@ class MS1DataModule(LightningDataModule):
                 word_vocab=self.word_vocab,
             )
             self.val = TrainingDataset(
-                datapoints=self.datapoints["val"],
+                datapoints=datapoints["val"],
                 root=self.graph_dir,
                 subset=self.subset,
                 node_types_to_consider=self.node_types_to_consider,
@@ -69,7 +100,7 @@ class MS1DataModule(LightningDataModule):
             )
         if stage == "test":
             self.test = TrainingDataset(
-                datapoints=self.datapoints["test"],
+                datapoints=datapoints["test"],
                 root=self.graph_dir,
                 subset=self.subset,
                 node_types_to_consider=self.node_types_to_consider,
@@ -77,34 +108,6 @@ class MS1DataModule(LightningDataModule):
                 node_vocab=self.node_vocab,
                 word_vocab=self.word_vocab,
             )
-
-    def calculate_weights(self):
-        # load class dicts
-        class_dict_fp = f"{dataset_dir}/taxonomy_class_dicts.json"
-        class_dicts = json.load(open(class_dict_fp, "r"))
-        weights = {}
-        for level in class_dicts:
-            tax_dict = class_dicts[level]
-            # for every label track cls_bins
-            labels_to_cls_bins = {label: set() for label in tax_dict.values()}
-            for r in pd.read_csv(self.dataset_fp).to_dict("records"):
-                split = r["split"]
-                if split != "train":
-                    continue
-                cls_bin = r["cls_bin"]
-                label = tax_dict[str(r[f"{level}_id"])]
-                labels_to_cls_bins[label].add(cls_bin)
-            # calculate weights
-            y = []
-            for label, cls_bins in labels_to_cls_bins.items():
-                if len(cls_bins) > 1:
-                    y.extend([label] * len(cls_bins))
-                else:
-                    y.append(label)
-            weights[level] = compute_class_weight(
-                class_weight="balanced", classes=np.unique(y), y=y
-            )
-        return weights
 
     def train_dataloader(self):
         train_dl = DataLoader(
@@ -121,7 +124,7 @@ class MS1DataModule(LightningDataModule):
         test_dl = DataLoader(
             self.test,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             collate_fn=self.collator,
             num_workers=self.num_workers,
             persistent_workers=self.persistent_workers,

@@ -44,12 +44,14 @@ def prepare_ms2_graphs():
     filenames = glob(f"{mzml_dir}/*.json")
     # create graphs
     for fp in filenames:
+        mzml_id = int(fp.split("/")[-1].split(".")[0])
+        os.makedirs(f"{output_dir}/{mzml_id}", exist_ok=True)
         peaks = json.load(open(fp))
         for p in peaks:
             if "ms2" not in p:
                 continue
             peak_id = p["ms1_peak_id"]
-            output_fp = f"{output_dir}/{peak_id}.pkl"
+            output_fp = f"{output_dir}/{mzml_id}/{peak_id}.pkl"
             if os.path.exists(output_fp):
                 continue
             G = MS2Graph.build_from_ms2_spectra(

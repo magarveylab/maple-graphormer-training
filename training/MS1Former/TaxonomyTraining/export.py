@@ -27,10 +27,10 @@ def compile_model(
     # model
     model = get_model(
         weights=weights,
-        node_embedding_dim=node_embedding_dim,
-        edge_embedding_dim=edge_embedding_dim,
-        num_gnn_heads=num_gnn_heads,
-        num_transformer_heads=num_transformer_heads,
+        node_embedding_dim=int(node_embedding_dim),
+        edge_embedding_dim=int(edge_embedding_dim),
+        num_gnn_heads=int(num_gnn_heads),
+        num_transformer_heads=int(num_transformer_heads),
     )
     # have to modify forward method for torchscript
     model.model.node_encoders["Peak"].forward = (

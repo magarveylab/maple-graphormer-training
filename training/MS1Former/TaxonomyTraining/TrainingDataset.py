@@ -7,7 +7,7 @@ import torch
 from torch_geometric.data import Dataset
 from tqdm import tqdm
 
-from omnicons import curdir
+from omnicons import dataset_dir
 
 
 class TrainingDataset(Dataset):
@@ -29,7 +29,7 @@ class TrainingDataset(Dataset):
         self.node_vocab = node_vocab
         self.edge_vocab = edge_vocab
         self.word_vocab = word_vocab
-        class_dict_fp = f"{curdir}/datasets/taxonomy_class_dicts.json"
+        class_dict_fp = f"{dataset_dir}/taxonomy_class_dicts.json"
         self.class_dict = json.load(open(class_dict_fp, "r"))
         self.prepare_data(datapoints=datapoints, subset=subset)
         super().__init__(

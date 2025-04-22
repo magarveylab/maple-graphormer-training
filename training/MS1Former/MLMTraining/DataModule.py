@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from TrainingDataset import TrainingDataset
 
-from omnicons import curdir
+from omnicons import dataset_dir
 from omnicons.collators.MaskCollators import NodeSentenceMaskCollator
 from omnicons.collators.MixedCollators import MixedCollator
 
@@ -16,8 +16,8 @@ class MS1DataModule(LightningDataModule):
 
     def __init__(
         self,
-        dataset_fp: str = f"{curdir}/datasets/ms1_taxonomy.csv",
-        graph_dir: str = f"{curdir}/datasets/MS1Graphs",
+        dataset_fp: str = f"{dataset_dir}/ms1_taxonomy.csv",
+        graph_dir: str = f"{dataset_dir}/MS1Graphs",
         batch_size: int = 36,
         num_workers: int = 0,
         persistent_workers: bool = False,

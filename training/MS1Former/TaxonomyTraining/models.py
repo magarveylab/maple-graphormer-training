@@ -5,7 +5,7 @@ import torch
 from Maple.Embedder.graphs.MS1Graph import get_node_vocab, get_word_vocab
 from torch.nn import ModuleDict
 
-from omnicons import curdir
+from omnicons import dataset_dir
 from omnicons.lightning.HeteroGraphModelForMultiTask import (
     HeteroGraphModelForMultiTaskLightning,
 )
@@ -143,7 +143,7 @@ def get_model(
     node_vocab = get_node_vocab()
     edge_vocab = get_word_vocab()
     # get tax class dict
-    class_dict_fp = f"{curdir}/datasets/taxonomy_class_dicts.json"
+    class_dict_fp = f"{dataset_dir}/taxonomy_class_dicts.json"
     tax_class_dict = json.load(open(class_dict_fp, "r"))
     # model setup
     node_encoders = get_node_encoders(
