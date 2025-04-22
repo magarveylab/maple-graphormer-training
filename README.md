@@ -37,3 +37,25 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py -logger_entity new_user
 python save.py
 python export.py
 ```
+
+## MS2Former Training
+1. Masked Language Modelling (MLM) - MS<sup>2</sup> fragments and neutral losses are randomly masked, and the model is trained to predict their corresponding masses from the remaining context.
+```
+cd training/MS2Former/MLMTraining
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py -logger_entity new_user
+python save.py
+```
+2. Chemotype-Supervised Classification – Predicts biosynthetic classes from fragmentation embeddings by fine-tuning the MS2Former model previously trained with MLM. This step uses an augmented dataset generated via graph label propagation.
+```
+cd training/MS2Former/ChemotypeTraining
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py -logger_entity new_user
+python save.py
+python export.py
+```
+3. Molecular Similarity-Supervised Classification – Predicts Tanimoto similarity bins for pairwise MS<sup>2</sup> spectra using an external compound dataset from MS-DIAL. Trained in parallel with the chemotype dataset to preserve underlying biochemical organization.
+```
+cd training/MS2Former/TanimotoTraining
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py -logger_entity new_user
+python save.py
+python export.py
+```
