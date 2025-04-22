@@ -11,7 +11,7 @@ from omnicons.trainers import get_trainer
 
 def train(
     checkpoint_dir: str = f"{experiment_dir}/MS2-tanimoto/checkpoints",
-    chemotye_checkpoint_fp: str = f"{experiment_dir}/MS2-chemotype/checkpoints/last.pt",
+    chemotype_checkpoint_fp: str = f"{experiment_dir}/MS2-chemotype/checkpoints/last.pt",
     checkpoint_name: str = "ms2tanimoto-{epoch:02d}-{val_loss:.2f}",
     logger_entity: str = "magarvey",
     logger_name: str = "tanimoto",
@@ -29,7 +29,7 @@ def train(
     weights = dm.calculate_weights()
     # model
     model = get_model(
-        pretrained_checkpoint=chemotye_checkpoint_fp,
+        pretrained_checkpoint=chemotype_checkpoint_fp,
         weights=weights,
         node_embedding_dim=node_embedding_dim,
         edge_embedding_dim=edge_embedding_dim,
@@ -99,5 +99,17 @@ parser.add_argument(
 )
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     freeze_support()
-    train()
+    train(
+        checkpoint_dir=args.checkpoint_dir,
+        chemotype_checkpoint_fp=args.chemotype_checkpoint_fp,
+        checkpoint_name=args.checkpoint_name,
+        logger_entity=args.logger_entity,
+        logger_name=args.logger_name,
+        trainer_strategy=args.trainer_strategy,
+        node_embedding_dim=args.node_embedding_dim,
+        edge_embedding_dim=args.edge_embedding_dim,
+        num_gnn_heads=args.num_gnn_heads,
+        num_transformer_heads=args.num_transformer_heads,
+    )

@@ -99,5 +99,16 @@ parser.add_argument(
 )
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     freeze_support()
-    train()
+    train(
+        checkpoint_dir=args.checkpoint_dir,
+        mlm_checkpoint_fp=args.mlm_checkpoint_fp,
+        checkpoint_name=args.checkpoint_name,
+        logger_entity=args.logger_entity,
+        logger_name=args.logger_name,
+        node_embedding_dim=args.node_embedding_dim,
+        edge_embedding_dim=args.edge_embedding_dim,
+        num_gnn_heads=args.num_gnn_heads,
+        num_transformer_heads=args.num_transformer_heads,
+    )
