@@ -26,6 +26,7 @@ def train(
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module
     dm = MS1DataModule()
+    dm.setup(stage="fit")
     weights = dm.calculate_weights()
     # model
     model = get_model(

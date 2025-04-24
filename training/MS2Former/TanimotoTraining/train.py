@@ -26,6 +26,7 @@ def train(
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module (so it can be trained on both servers)
     dm = MS2DataModule()
+    dm.setup(stage="fit")
     weights = dm.calculate_weights()
     # model
     model = get_model(
