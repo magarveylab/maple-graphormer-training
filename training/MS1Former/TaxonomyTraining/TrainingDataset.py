@@ -93,6 +93,7 @@ class TrainingDataset(Dataset):
             node_types_to_consider=self.node_types_to_consider,
             edge_types_to_consider=self.edge_types_to_consider,
             apply_edge_attr=False,
+            apply_multigraph_wrapper=True,
         )
         for level in ["phylum", "class", "order", "family", "genus"]:
             label = str(s[f"{level}_id"])
