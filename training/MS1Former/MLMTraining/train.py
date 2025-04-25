@@ -25,7 +25,6 @@ def train(
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module
     dm = MS1DataModule()
-    dm.setup(stage="fit")
     # model
     model = get_model(
         node_embedding_dim=int(node_embedding_dim),

@@ -83,7 +83,7 @@ class MS1DataModule(LightningDataModule):
         class_dict_fp = f"{dataset_dir}/taxonomy_class_dicts.json"
         class_dicts = json.load(open(class_dict_fp, "r"))
         weights = {}
-        for level in class_dicts:
+        for level in ["phylum", "class", "order", "family", "genus"]:
             tax_dict = class_dicts[level]
             # for every label track cls_bins
             labels_to_cls_bins = {label: set() for label in tax_dict.values()}
@@ -91,7 +91,7 @@ class MS1DataModule(LightningDataModule):
                 split = r["split"]
                 if split != "train":
                     continue
-                cls_bin = r["cls_bin"]
+                cls_bin = r["genus_id"]
                 label = tax_dict[str(r[f"{level}_id"])]
                 labels_to_cls_bins[label].add(cls_bin)
             # calculate weights

@@ -1,0 +1,148 @@
+diff --git a/omnicons/configs/HeadConfigs.py b/omnicons/configs/HeadConfigs.py
+index fe2dd00..adc1d6e 100644
+--- a/omnicons/configs/HeadConfigs.py
++++ b/omnicons/configs/HeadConfigs.py
+@@ -3,6 +3,10 @@ from typing import List, Optional, Tuple, Union
+ from torch import nn
+ 
+ from omnicons.configs.Config import ConfigTemplate
++from omnicons.models.heads.GraphClassification import (
++    MultiLabelGraphClassification,
++    SingleLabelGraphClassification,
++)
+ from omnicons.models.heads.NodeClassification import (
+     MultiLabelNodeClassificationHead,
+     SingleLabelNodeClassificationHead,
+@@ -73,4 +77,40 @@ class SiameseGraphClsTaskHeadConfig(ConfigTemplate):
+         return SiameseGraphClassificationHead(**self.properties)
+ 
+ 
+-HeadConfig = Union[NodeClsTaskHeadConfig, SiameseGraphClsTaskHeadConfig]
++class GraphClsTaskHeadConfig(ConfigTemplate):
++
++    def __init__(
++        self,
++        hidden_size: int = 768,
++        hidden_dropout_prob: float = 0.1,
++        num_labels: int = 2,
++        class_weight: Optional[List[float]] = None,
++        multi_label: bool = False,
++        analyze_inputs: List[str] = ["a"],
++        loss_scalar: float = 1.0,
++    ):
++        super().__init__(
++            base="GraphClsTaskHead",
++            properties={
++                "hidden_size": hidden_size,
++                "hidden_dropout_prob": hidden_dropout_prob,
++                "num_labels": num_labels,
++                "class_weight": class_weight,
++                "multi_label": multi_label,
++                "analyze_inputs": analyze_inputs,
++                "loss_scalar": loss_scalar,
++            },
++        )
++
++    def get_model(self) -> nn.Module:
++        if self.properties["multi_label"] == True:
++            return MultiLabelGraphClassification(**self.properties)
++        else:
++            return SingleLabelGraphClassification(**self.properties)
++
++
++HeadConfig = Union[
++    NodeClsTaskHeadConfig,
++    SiameseGraphClsTaskHeadConfig,
++    GraphClsTaskHeadConfig,
++]
+diff --git a/omnicons/datasetprep/__init__.py b/omnicons/datasetprep/__init__.py
+index 2af7660..7ac72a4 100644
+--- a/omnicons/datasetprep/__init__.py
++++ b/omnicons/datasetprep/__init__.py
+@@ -45,14 +45,14 @@ def prepare_ms2_graphs():
+     os.makedirs(output_dir, exist_ok=True)
+     filenames = glob(f"{mzml_dir}/*.json")
+     # create graphs
+-    for fp in filenames:
++    for fp in tqdm(filenames):
+         mzml_id = int(fp.split("/")[-1].split(".")[0])
+         os.makedirs(f"{output_dir}/{mzml_id}", exist_ok=True)
+         peaks = json.load(open(fp))
+         for p in peaks:
+             if "ms2" not in p:
+                 continue
+-            peak_id = p["ms1_peak_id"]
++            peak_id = p["peak_id"]
+             output_fp = f"{output_dir}/{mzml_id}/{peak_id}.pkl"
+             if os.path.exists(output_fp):
+                 continue
+@@ -74,7 +74,7 @@ def prep_msdial_dataset():
+     os.makedirs(output_dir, exist_ok=True)
+     # create graphs
+     data = json.load(open(raw_data_fp))
+-    for p in data:
++    for p in tqdm(data):
+         spectra_id = p["spectra_id"]
+         output_fp = f"{output_dir}/{spectra_id}.pkl"
+         if os.path.exists(output_fp):
+diff --git a/training/MS1Former/MLMTraining/train.py b/training/MS1Former/MLMTraining/train.py
+index 96d5c0c..da0dd80 100644
+--- a/training/MS1Former/MLMTraining/train.py
++++ b/training/MS1Former/MLMTraining/train.py
+@@ -25,7 +25,6 @@ def train(
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module
+     dm = MS1DataModule()
+-    dm.setup(stage="fit")
+     # model
+     model = get_model(
+         node_embedding_dim=int(node_embedding_dim),
+diff --git a/training/MS1Former/TaxonomyTraining/DataModule.py b/training/MS1Former/TaxonomyTraining/DataModule.py
+index 2eae846..677c741 100644
+--- a/training/MS1Former/TaxonomyTraining/DataModule.py
++++ b/training/MS1Former/TaxonomyTraining/DataModule.py
+@@ -83,7 +83,7 @@ class MS1DataModule(LightningDataModule):
+         class_dict_fp = f"{dataset_dir}/taxonomy_class_dicts.json"
+         class_dicts = json.load(open(class_dict_fp, "r"))
+         weights = {}
+-        for level in class_dicts:
++        for level in ["phylum", "class", "order", "family", "genus"]:
+             tax_dict = class_dicts[level]
+             # for every label track cls_bins
+             labels_to_cls_bins = {label: set() for label in tax_dict.values()}
+@@ -91,7 +91,7 @@ class MS1DataModule(LightningDataModule):
+                 split = r["split"]
+                 if split != "train":
+                     continue
+-                cls_bin = r["cls_bin"]
++                cls_bin = r["genus_id"]
+                 label = tax_dict[str(r[f"{level}_id"])]
+                 labels_to_cls_bins[label].add(cls_bin)
+             # calculate weights
+diff --git a/training/MS1Former/TaxonomyTraining/TrainingDataset.py b/training/MS1Former/TaxonomyTraining/TrainingDataset.py
+index fd5bb8e..029898c 100644
+--- a/training/MS1Former/TaxonomyTraining/TrainingDataset.py
++++ b/training/MS1Former/TaxonomyTraining/TrainingDataset.py
+@@ -50,7 +50,7 @@ class TrainingDataset(Dataset):
+         sample_meta = {}
+         for d in datapoints:
+             sample_id = d["sample_id"]
+-            cls_bin = d["cls_bin"]
++            cls_bin = d["genus_id"]
+             if cls_bin not in self.sorted_datapoints:
+                 self.sorted_datapoints[cls_bin] = []
+             self.sorted_datapoints[cls_bin].append(sample_id)
+diff --git a/training/MS1Former/TaxonomyTraining/train.py b/training/MS1Former/TaxonomyTraining/train.py
+index a28e462..7d39bea 100644
+--- a/training/MS1Former/TaxonomyTraining/train.py
++++ b/training/MS1Former/TaxonomyTraining/train.py
+@@ -25,8 +25,7 @@ def train(
+     # setup directories
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module
+-    dm = MS1DataModule()
+-    dm.setup(stage="fit")
++    dm = MS1DataModule(subset=10)
+     weights = dm.calculate_weights()
+     # model
+     model = get_model(

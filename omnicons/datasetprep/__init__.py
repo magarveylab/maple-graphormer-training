@@ -45,14 +45,14 @@ def prepare_ms2_graphs():
     os.makedirs(output_dir, exist_ok=True)
     filenames = glob(f"{mzml_dir}/*.json")
     # create graphs
-    for fp in filenames:
+    for fp in tqdm(filenames):
         mzml_id = int(fp.split("/")[-1].split(".")[0])
         os.makedirs(f"{output_dir}/{mzml_id}", exist_ok=True)
         peaks = json.load(open(fp))
         for p in peaks:
             if "ms2" not in p:
                 continue
-            peak_id = p["ms1_peak_id"]
+            peak_id = p["peak_id"]
             output_fp = f"{output_dir}/{mzml_id}/{peak_id}.pkl"
             if os.path.exists(output_fp):
                 continue
@@ -74,7 +74,7 @@ def prep_msdial_dataset():
     os.makedirs(output_dir, exist_ok=True)
     # create graphs
     data = json.load(open(raw_data_fp))
-    for p in data:
+    for p in tqdm(data):
         spectra_id = p["spectra_id"]
         output_fp = f"{output_dir}/{spectra_id}.pkl"
         if os.path.exists(output_fp):

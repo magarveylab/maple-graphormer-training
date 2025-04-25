@@ -25,7 +25,7 @@ def train(
     # setup directories
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module
-    dm = MS1DataModule()
+    dm = MS1DataModule(subset=10)
     weights = dm.calculate_weights()
     # model
     model = get_model(
@@ -54,7 +54,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "-checkpoint_dir",
     help="Directory to save checkpoints",
-    default=f"{experiment_dir}/MS1-taxonomy/checkpoints",
+    default=f"{experiment_dir}/MS1-taxonomy",
 )
 parser.add_argument(
     "-mlm_checkpoint_fp",

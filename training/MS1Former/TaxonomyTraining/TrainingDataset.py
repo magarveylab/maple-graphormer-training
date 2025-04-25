@@ -50,7 +50,7 @@ class TrainingDataset(Dataset):
         sample_meta = {}
         for d in datapoints:
             sample_id = d["sample_id"]
-            cls_bin = d["cls_bin"]
+            cls_bin = d["genus_id"]
             if cls_bin not in self.sorted_datapoints:
                 self.sorted_datapoints[cls_bin] = []
             self.sorted_datapoints[cls_bin].append(sample_id)
