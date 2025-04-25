@@ -5,6 +5,7 @@ from glob import glob
 
 from Maple.Embedder.graphs.MS1Graph import MS1Graph
 from Maple.Embedder.graphs.MS2Graph import MS2Graph
+from tqdm import tqdm
 
 from omnicons import curdir
 
@@ -19,13 +20,14 @@ def prepare_ms1_graphs():
     os.makedirs(output_dir, exist_ok=True)
     filenames = glob(f"{mzml_dir}/*.json")
     # create graphs
-    for fp in filenames:
+    for fp in tqdm(filenames):
         peaks = json.load(open(fp))
         mzml_id = int(fp.split("/")[-1].split(".")[0])
         os.makedirs(f"{output_dir}/{mzml_id}", exist_ok=True)
         for p in peaks:
-            # add peak_id to the dict
-            p["peak_id"] = p["ms1_peak_id"]
+            p["intensity"] = p["intensity_raw"]
+        if len(peaks) == 0:
+            continue
         out = MS1Graph.build_from_ms1_spectra(mzml_id=mzml_id, ms1_peaks=peaks)
         for graph in out:
             graph_id = graph.graph_id

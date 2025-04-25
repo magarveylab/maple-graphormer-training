@@ -24,7 +24,7 @@ def train(
     # setup directories
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module
-    dm = MS1DataModule()
+    dm = MS1DataModule(subset=10)
     dm.setup(stage="fit")
     # model
     model = get_model(

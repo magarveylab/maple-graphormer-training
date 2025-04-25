@@ -52,3 +52,56 @@ class NodeWordMaskCollator(BaseCollator):
         x[mask] = torch.tensor([self.mask_id])
         y[~mask] = -100  # non-masked words are ignored
         return {"x": x, self.mask_name: y}
+
+
+@dataclass
+class NodeSentenceMaskCollator(BaseCollator):
+    # each node is represented by a sentence
+    # for simplicity the entire sentence is masked
+    # mask_names should correspond to sentence structure
+    mask_id: int = 1  # make sure common mask id
+    p: int = 0.15
+    mask_names: tuple = ("node_mask",)
+    # follows sentence structure (have unique keys)
+    apply_batch: bool = False
+    node_types_to_consider: tuple = ()
+
+    def prepare_individual_data(
+        self, data: Union[Data, HeteroData]
+    ) -> Union[Data, HeteroData]:
+        data = data.clone()
+        if isinstance(data, Data):
+            out = self.process(data.x)
+            for k, v in out.items():
+                setattr(data, k, v)
+        elif isinstance(data, HeteroData):
+            for node_type in data.node_types:
+                if node_type not in self.node_types_to_consider:
+                    continue
+                out = self.process(data[node_type].x)
+                for k, v in out.items():
+                    setattr(data[node_type], k, v)
+        return data
+
+    def process(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+        l = x.shape[0]
+        # generate mask (similar to word encoder)
+        masked_nodes = math.ceil(l * self.p)
+        mask = torch.cat(
+            [
+                torch.ones(masked_nodes, dtype=torch.bool),
+                torch.zeros(l - masked_nodes, dtype=torch.bool),
+            ]
+        )
+        mask = mask.index_select(0, torch.randperm(mask.shape[0]))
+        # introduce mask nodes
+        x_org = x.clone()
+        # add mask
+        x[mask] = torch.tensor([self.mask_id] * len(self.mask_names))
+        out = {"x": x}
+        # add
+        for idx in range(len(self.mask_names)):
+            y = x_org[:, idx].reshape(-1).clone()
+            y[~mask] = -100
+            out[self.mask_names[idx]] = y
+        return out

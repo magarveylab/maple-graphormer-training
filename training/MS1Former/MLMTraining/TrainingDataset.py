@@ -40,19 +40,7 @@ class TrainingDataset(Dataset):
         subset: Optional[int] = None,
     ):
         if subset:
-            new_datapoints = []
-            # bin datapoints by cls_bin
-            sorted_datapoints = {}
-            for d in datapoints:
-                cls_bin = d["cls_bin"]
-                if cls_bin not in sorted_datapoints:
-                    sorted_datapoints[cls_bin] = []
-                sorted_datapoints[cls_bin].append(d)
-            for cls_bin, data in sorted_datapoints.items():
-                random.shuffle(data)
-                new_datapoints.extend(data[:subset])
-            # define new datapoints
-            datapoints = new_datapoints
+            datapoints = datapoints[:subset]
         # create tensor cache
         self.tensor_cache = {}
         for s in tqdm(datapoints):

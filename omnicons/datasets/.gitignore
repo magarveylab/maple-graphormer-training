@@ -4,3 +4,7 @@ ms-dial.json
 augmented_chemotype_dataset.csv
 ms1_taxonomy.csv
 tanimoto_edge_ds.csv
+raw_data/
+MS1Graphs/*
+MS2Graphs/*
+MSDial-MS2Graphs/*

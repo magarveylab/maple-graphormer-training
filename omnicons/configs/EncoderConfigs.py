@@ -3,7 +3,10 @@ from typing import Union
 from torch import nn
 
 from omnicons.configs.Config import ConfigTemplate
-from omnicons.models.encoders.MLPEncoder import EncoderDict, SentenceEncoder
+from omnicons.models.encoders.SentenceEncoder import (
+    EncoderDict,
+    SentenceEncoder,
+)
 from omnicons.models.encoders.WordEncoder import WordEncoder
 
 
