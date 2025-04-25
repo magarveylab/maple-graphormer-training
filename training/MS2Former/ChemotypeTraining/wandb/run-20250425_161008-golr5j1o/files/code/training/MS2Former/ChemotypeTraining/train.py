@@ -25,7 +25,7 @@ def train(
     # setup directories
     os.makedirs(checkpoint_dir, exist_ok=True)
     # data module
-    dm = MS2DataModule()
+    dm = MS2DataModule(graph_dir="/data/mass_spec/ms2/graphs", subset=10)
     weights = dm.calculate_weights()
     # model
     model = get_model(

@@ -1,0 +1,23 @@
+diff --git a/training/MS2Former/MLMTraining/train.py b/training/MS2Former/MLMTraining/train.py
+index 12a7e7b..6cc7571 100644
+--- a/training/MS2Former/MLMTraining/train.py
++++ b/training/MS2Former/MLMTraining/train.py
+@@ -24,8 +24,7 @@ def train(
+     # setup directories
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module
+-    dm = MS2DataModule()
+-    dm.setup(stage="fit")
++    dm = MS2DataModule(dataset_fp="/data/mass_spec/ms2/graphs", subset=100)
+     # model
+     model = get_model(
+         node_embedding_dim=int(node_embedding_dim),
+@@ -60,7 +59,7 @@ parser.add_argument(
+ parser.add_argument(
+     "-logger_entity",
+     help="wandb entity",
+-    default="user",
++    default="magarvey",
+ )
+ parser.add_argument(
+     "-logger_name",

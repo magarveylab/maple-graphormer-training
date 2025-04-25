@@ -10,11 +10,11 @@ from omnicons.trainers import get_trainer
 
 
 def train(
-    checkpoint_dir: str = f"{experiment_dir}/MS2-chemotype/checkpoints",
-    mlm_checkpoint_fp: str = f"{experiment_dir}/MS2-mlm/checkpoints/last.pt",
-    checkpoint_name: str = "ms2chemotype-{epoch:02d}-{val_loss:.2f}",
+    checkpoint_dir: str = f"{experiment_dir}/MS2-tanimoto/checkpoints",
+    chemotype_checkpoint_fp: str = f"{experiment_dir}/MS2-chemotype/checkpoints/last.pt",
+    checkpoint_name: str = "ms2tanimoto-{epoch:02d}-{val_loss:.2f}",
     logger_entity: str = "magarvey",
-    logger_name: str = "chemotype",
+    logger_name: str = "tanimoto",
     logger_project: str = "MS2Former",
     trainer_strategy: str = "deepspeed_stage_3_offload",
     node_embedding_dim: int = 128,
@@ -24,12 +24,17 @@ def train(
 ):
     # setup directories
     os.makedirs(checkpoint_dir, exist_ok=True)
-    # data module
-    dm = MS2DataModule()
+    # data module (so it can be trained on both servers)
+    dm = MS2DataModule(
+        chemotype_graph_dir="/data/mass_spec/ms2/graphs",
+        tanimoto_graph_dir="/data/mass_spec/ms2/external_graphs",
+        subset=10,
+    )
+    dm.setup(stage="fit")
     weights = dm.calculate_weights()
     # model
     model = get_model(
-        pretrained_checkpoint=mlm_checkpoint_fp,
+        pretrained_checkpoint=chemotype_checkpoint_fp,
         weights=weights,
         node_embedding_dim=node_embedding_dim,
         edge_embedding_dim=edge_embedding_dim,
@@ -50,22 +55,22 @@ def train(
 
 
 parser = argparse.ArgumentParser(
-    description="Train MS2Former with Supervised Chemotype Classification"
+    description="Train MS2Former with Supervised Molecular Similarity Scores"
 )
 parser.add_argument(
     "-checkpoint_dir",
     help="Directory to save checkpoints",
-    default=f"{experiment_dir}/MS2-chemotype/checkpoints",
+    default=f"{experiment_dir}/MS2-tanimoto/checkpoints",
 )
 parser.add_argument(
-    "-mlm_checkpoint_fp",
-    help="pytorch checkpoint for MS2Former mlm pretrained weights",
-    default=f"{experiment_dir}/MS2-mlm/checkpoints/last.pt",
+    "-chemotype_checkpoint_fp",
+    help="pytorch checkpoint for MS2Former chemotype pretrained weights",
+    default=f"{experiment_dir}/MS2-chemotype/checkpoints/last.pt",
 )
 parser.add_argument(
     "-checkpoint_name",
     help="checkpoint name for wandb",
-    default="ms2chemotype-{epoch:02d}-{val_loss:.2f}",
+    default="ms2tanimoto-{epoch:02d}-{val_loss:.2f}",
 )
 parser.add_argument(
     "-logger_entity",
@@ -75,7 +80,7 @@ parser.add_argument(
 parser.add_argument(
     "-logger_name",
     help="wandb entity",
-    default="chemotype",
+    default="tanimoto",
 )
 parser.add_argument(
     "-node_embedding_dim",
@@ -103,7 +108,7 @@ if __name__ == "__main__":
     freeze_support()
     train(
         checkpoint_dir=args.checkpoint_dir,
-        mlm_checkpoint_fp=args.mlm_checkpoint_fp,
+        chemotype_checkpoint_fp=args.chemotype_checkpoint_fp,
         checkpoint_name=args.checkpoint_name,
         logger_entity=args.logger_entity,
         logger_name=args.logger_name,

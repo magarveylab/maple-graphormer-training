@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "-checkpoint_dir",
     help="Directory to save checkpoints",
-    default=f"{experiment_dir}/MS1-mlm/checkpoints",
+    default=f"{experiment_dir}/MS2-mlm/checkpoints",
 )
 
 

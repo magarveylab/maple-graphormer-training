@@ -181,7 +181,6 @@ def get_model(
     )
     graph_pooler_config = get_graph_pooler(embedding_dim=node_embedding_dim)
     heads = get_heads(
-        vocab=node_vocab,
         weights=weights,
         embedding_dim=node_embedding_dim,
     )

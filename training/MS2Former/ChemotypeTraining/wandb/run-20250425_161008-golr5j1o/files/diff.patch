@@ -1,0 +1,103 @@
+diff --git a/training/MS2Former/ChemotypeTraining/models.py b/training/MS2Former/ChemotypeTraining/models.py
+index 4d44a72..0d1394e 100644
+--- a/training/MS2Former/ChemotypeTraining/models.py
++++ b/training/MS2Former/ChemotypeTraining/models.py
+@@ -181,7 +181,6 @@ def get_model(
+     )
+     graph_pooler_config = get_graph_pooler(embedding_dim=node_embedding_dim)
+     heads = get_heads(
+-        vocab=node_vocab,
+         weights=weights,
+         embedding_dim=node_embedding_dim,
+     )
+diff --git a/training/MS2Former/ChemotypeTraining/train.py b/training/MS2Former/ChemotypeTraining/train.py
+index 0015b68..7dd1fa9 100644
+--- a/training/MS2Former/ChemotypeTraining/train.py
++++ b/training/MS2Former/ChemotypeTraining/train.py
+@@ -25,8 +25,7 @@ def train(
+     # setup directories
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module
+-    dm = MS2DataModule()
+-    dm.setup(stage="fit")
++    dm = MS2DataModule(graph_dir="/data/mass_spec/ms2/graphs", subset=10)
+     weights = dm.calculate_weights()
+     # model
+     model = get_model(
+@@ -71,7 +70,7 @@ parser.add_argument(
+ parser.add_argument(
+     "-logger_entity",
+     help="wandb entity",
+-    default="user",
++    default="magarvey",
+ )
+ parser.add_argument(
+     "-logger_name",
+diff --git a/training/MS2Former/MLMTraining/save.py b/training/MS2Former/MLMTraining/save.py
+index 4b925af..c6a6922 100644
+--- a/training/MS2Former/MLMTraining/save.py
++++ b/training/MS2Former/MLMTraining/save.py
+@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(
+ parser.add_argument(
+     "-checkpoint_dir",
+     help="Directory to save checkpoints",
+-    default=f"{experiment_dir}/MS1-mlm/checkpoints",
++    default=f"{experiment_dir}/MS2-mlm/checkpoints",
+ )
+ 
+ 
+diff --git a/training/MS2Former/MLMTraining/train.py b/training/MS2Former/MLMTraining/train.py
+index 12a7e7b..24666af 100644
+--- a/training/MS2Former/MLMTraining/train.py
++++ b/training/MS2Former/MLMTraining/train.py
+@@ -25,7 +25,6 @@ def train(
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module
+     dm = MS2DataModule()
+-    dm.setup(stage="fit")
+     # model
+     model = get_model(
+         node_embedding_dim=int(node_embedding_dim),
+@@ -60,7 +59,7 @@ parser.add_argument(
+ parser.add_argument(
+     "-logger_entity",
+     help="wandb entity",
+-    default="user",
++    default="magarvey",
+ )
+ parser.add_argument(
+     "-logger_name",
+diff --git a/training/MS2Former/TanimotoTraining/train.py b/training/MS2Former/TanimotoTraining/train.py
+index 2fe04bb..553f74a 100644
+--- a/training/MS2Former/TanimotoTraining/train.py
++++ b/training/MS2Former/TanimotoTraining/train.py
+@@ -25,7 +25,11 @@ def train(
+     # setup directories
+     os.makedirs(checkpoint_dir, exist_ok=True)
+     # data module (so it can be trained on both servers)
+-    dm = MS2DataModule()
++    dm = MS2DataModule(
++        chemotype_graph_dir="/data/mass_spec/ms2/graphs",
++        tanimoto_graph_dir="/data/mass_spec/ms2/external_graphs",
++        subset=100,
++    )
+     dm.setup(stage="fit")
+     weights = dm.calculate_weights()
+     # model
+@@ -71,7 +75,7 @@ parser.add_argument(
+ parser.add_argument(
+     "-logger_entity",
+     help="wandb entity",
+-    default="user",
++    default="magarvey",
+ )
+ parser.add_argument(
+     "-logger_name",
+@@ -108,7 +112,6 @@ if __name__ == "__main__":
+         checkpoint_name=args.checkpoint_name,
+         logger_entity=args.logger_entity,
+         logger_name=args.logger_name,
+-        trainer_strategy=args.trainer_strategy,
+         node_embedding_dim=args.node_embedding_dim,
+         edge_embedding_dim=args.edge_embedding_dim,
+         num_gnn_heads=args.num_gnn_heads,

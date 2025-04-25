@@ -30,6 +30,7 @@ def compile_model(
         edge_embedding_dim=int(edge_embedding_dim),
         num_gnn_heads=int(num_gnn_heads),
         num_transformer_heads=int(num_transformer_heads),
+        pretrained_checkpoint=pytorch_checkpoint_fp,
     )
     # have to modify forward method for torchscript
     model.model.node_encoders["MZ"].forward = (

@@ -71,7 +71,7 @@ parser.add_argument(
 parser.add_argument(
     "-logger_entity",
     help="wandb entity",
-    default="user",
+    default="magarvey",
 )
 parser.add_argument(
     "-logger_name",
@@ -108,7 +108,6 @@ if __name__ == "__main__":
         checkpoint_name=args.checkpoint_name,
         logger_entity=args.logger_entity,
         logger_name=args.logger_name,
-        trainer_strategy=args.trainer_strategy,
         node_embedding_dim=args.node_embedding_dim,
         edge_embedding_dim=args.edge_embedding_dim,
         num_gnn_heads=args.num_gnn_heads,
