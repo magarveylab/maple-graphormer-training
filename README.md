@@ -14,7 +14,7 @@ Training scripts for MAPLE Graphormer models for publication
     - Follow the [official quickstart guide](https://docs.wandb.ai/quickstart/) to configure Weights & Biases for experiment tracking.
 
 ## Dataset Preparation
-Download and extract `datasets.zip` and `raw_data.zip` from the accompanying [Zenodo repository](https://zenodo.org/doi/10.5281/zenodo.15226521) and place their contents in this [directory](https://github.com/magarveylab/maple-graphormer-training/tree/main/omnicons/datasets). Then, run the modules below to pre-generate the required graphs for training.
+Download and extract `datasets.zip` and `raw_data.zip` from the accompanying [Zenodo repository](https://zenodo.org/doi/10.5281/zenodo.15285195) and place their contents in this [directory](https://github.com/magarveylab/maple-graphormer-training/tree/main/omnicons/datasets). Then, run the modules below to pre-generate the required graphs for training.
 ```python
 from omnicons import datasetprep
 
