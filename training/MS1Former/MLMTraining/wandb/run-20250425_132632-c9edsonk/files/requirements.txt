@@ -42,7 +42,7 @@ nvidia-cufile-cu12==1.11.1.6
 annotated-types==0.7.0
 pydantic_core==2.33.1
 PyYAML==6.0.2
-aiohttp==3.11.18
+aiohttp==3.12.14
 wandb==0.19.10
 msgpack==1.1.0
 smmap==5.0.2
