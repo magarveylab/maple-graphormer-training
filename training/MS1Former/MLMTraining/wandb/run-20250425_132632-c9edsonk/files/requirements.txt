@@ -10,7 +10,7 @@ filelock==3.13.1
 triton==3.3.0
 attrs==25.3.0
 nvidia-curand-cu12==10.3.7.77
-protobuf==6.30.2
+protobuf==6.31.1
 frozenlist==1.6.0
 docker-pycreds==0.4.0
 pip==25.0
