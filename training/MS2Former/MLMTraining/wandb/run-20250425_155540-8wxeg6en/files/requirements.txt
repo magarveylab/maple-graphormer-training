@@ -160,8 +160,8 @@ urllib3==1.26.20
 vector-quantize-pytorch==1.15.6
 wandb==0.17.5
 wcwidth==0.2.13
-wheel==0.43.0
-wheel==0.43.0
+wheel==0.46.2
+wheel==0.46.2
 xxhash==3.2.0
 yarl==1.9.4
 zipp==3.19.2
