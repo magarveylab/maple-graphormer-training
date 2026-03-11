@@ -66,7 +66,7 @@ nvidia-cufft-cu12==11.3.0.4
 ninja==1.11.1.4
 tzdata==2025.2
 torchvision==0.22.0+cu126
-pillow==11.0.0
+pillow==12.1.1
 urllib3==2.4.0
 nvidia-cusparselt-cu12==0.6.3
 nvidia-cublas-cu12==12.6.4.1
